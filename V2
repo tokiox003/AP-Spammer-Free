@@ -331,6 +331,10 @@ end)
 while true do
     task.wait(10)
     updateList()
+local player = game.Players.LocalPlayer
+
+player.CharacterAdded:Connect(function()
+    wait(0.1)
 end
     
 else
@@ -360,8 +364,6 @@ local function update(input)
 end
 local player = game.Players.LocalPlayer
 
-player.CharacterAdded:Connect(function()
-    wait(0.1)
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
