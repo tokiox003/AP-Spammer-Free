@@ -1,0 +1,591 @@
+local player = game.Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+if UserInputService.TouchEnabled then
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Tokiox AP Spammer Mobile"
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 180, 0, 220)
+MainFrame.Position = UDim2.new(0, 10, 0, 10)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+MainFrame.Parent = ScreenGui
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 20)
+TitleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TitleBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -25, 1, 0)
+Title.Text = "Tokiox AP Spammer"
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 12
+Title.Parent = TitleBar
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        update(input)
+    end
+end)
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -25, 0, 0)
+CloseBtn.Text = "X"
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 12
+CloseBtn.Parent = TitleBar
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+local PlayerList = Instance.new("ScrollingFrame")
+PlayerList.Size = UDim2.new(1, -10, 0, 120)
+PlayerList.Position = UDim2.new(0, 5, 0, 25)
+PlayerList.BackgroundTransparency = 1
+PlayerList.Parent = MainFrame
+local SelectedPlayerFrame = Instance.new("Frame")
+SelectedPlayerFrame.Size = UDim2.new(1, -10, 0, 35)
+SelectedPlayerFrame.Position = UDim2.new(0, 5, 0, 150)
+SelectedPlayerFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SelectedPlayerFrame.BorderSizePixel = 1
+SelectedPlayerFrame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+SelectedPlayerFrame.Parent = MainFrame
+
+local SelectedLabel = Instance.new("TextLabel")
+SelectedLabel.Size = UDim2.new(1, 0, 0, 15)
+SelectedLabel.Position = UDim2.new(0, 0, 0, 0)
+SelectedLabel.Text = "Selected:"
+SelectedLabel.BackgroundTransparency = 1
+SelectedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SelectedLabel.TextSize = 10
+SelectedLabel.Parent = SelectedPlayerFrame
+
+local SelectedName = Instance.new("TextLabel")
+SelectedName.Size = UDim2.new(1, 0, 0, 20)
+SelectedName.Position = UDim2.new(0, 0, 0, 15)
+SelectedName.Text = "None"
+SelectedName.BackgroundTransparency = 1
+SelectedName.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectedName.TextSize = 12
+SelectedName.Font = Enum.Font.SourceSansBold
+SelectedName.Parent = SelectedPlayerFrame
+
+local playerButtons = {}
+local selectedPlayer = nil
+
+local DEBUG_MODE = true
+
+local function executeCommands()
+    if not selectedPlayer then
+        print("No player selected!")
+        return false
+    end
+    
+    local commands = {
+        ";rocket " .. selectedPlayer,
+        ";balloon " .. selectedPlayer,
+        ";tiny " .. selectedPlayer,
+        ";jumpscare " .. selectedPlayer,
+        ";inverse " .. selectedPlayer
+    }
+    
+    local RS = game:GetService("ReplicatedStorage")
+    local success = false
+    local commandsExecuted = 0
+    
+    if DEBUG_MODE then
+        print("=== DEBUG: Executing commands for " .. selectedPlayer .. " ===")
+        print("Total commands to execute: " .. #commands)
+    end
+    
+    for _, remoteName in ipairs({"AdminEvent", "AdminRemote", "ExecuteCommand", "CommandEvent", "Admin"}) do
+        local remote = RS:FindFirstChild(remoteName)
+        if remote and remote:IsA("RemoteEvent") then
+            if DEBUG_MODE then
+                print("Found RemoteEvent: " .. remoteName)
+            end
+            
+            for i, cmd in ipairs(commands) do
+                remote:FireServer(cmd)
+                commandsExecuted = commandsExecuted + 1
+                if DEBUG_MODE then
+                    print("Command " .. i .. "/" .. #commands .. ": " .. cmd)
+                end
+                task.wait(0.02)
+            end
+            success = true
+            break
+        end
+    end
+    
+    if not success then
+        for _, funcName in ipairs({"AdminFunction", "ExecuteCommandFunc", "CommandFunction"}) do
+            local func = RS:FindFirstChild(funcName)
+            if func and func:IsA("RemoteFunction") then
+                if DEBUG_MODE then
+                    print("Found RemoteFunction: " .. funcName)
+                end
+                
+                for i, cmd in ipairs(commands) do
+                    func:InvokeServer(cmd)
+                    commandsExecuted = commandsExecuted + 1
+                    if DEBUG_MODE then
+                        print("Command " .. i .. "/" .. #commands .. ": " .. cmd)
+                    end
+                    task.wait(0.02)
+                end
+                success = true
+                break
+            end
+        end
+    end
+    
+    if not success then
+        if DEBUG_MODE then
+            print("Trying chat method...")
+        end
+        
+        local TextChat = game:GetService("TextChatService")
+        local Channels = TextChat:FindFirstChild("TextChannels")
+        if Channels then
+            local General = Channels:FindFirstChild("RBXGeneral")
+            if General then
+                for i, cmd in ipairs(commands) do
+                    General:SendAsync(cmd)
+                    commandsExecuted = commandsExecuted + 1
+                    if DEBUG_MODE then
+                        print("Command " .. i .. "/" .. #commands .. ": " .. cmd)
+                    end
+                    task.wait(0.1)
+                end
+                success = true
+            end
+        end
+    end
+    
+    
+    return success and commandsExecuted == #commands
+end
+
+local function updateList()
+    local currentPlayers = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            currentPlayers[player.Name] = player
+        end
+    end
+    
+    for playerName, button in pairs(playerButtons) do
+        if not currentPlayers[playerName] then
+            if button and button.Parent then
+                button:Destroy()
+            end
+            playerButtons[playerName] = nil
+            
+            if selectedPlayer == playerName then
+                selectedPlayer = nil
+                SelectedName.Text = "None"
+                SelectedName.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+        end
+    end
+    
+    local yPos = 0
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if not playerButtons[player.Name] then
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1, -10, 0, 22)
+                Btn.Position = UDim2.new(0, 5, 0, yPos)
+                Btn.Text = player.Name
+                Btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Btn.TextSize = 11
+                Btn.Parent = PlayerList
+                
+                Btn.MouseButton1Click:Connect(function()
+                    selectedPlayer = player.Name
+                    SelectedName.Text = player.Name
+                    SelectedName.TextColor3 = Color3.fromRGB(100, 255, 100)
+                    
+                    for pName, pBtn in pairs(playerButtons) do
+                        if pBtn then
+                            if pName == player.Name then
+                                pBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+                            else
+                                pBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                            end
+                        end
+                    end
+                    
+                    print("Selected: " .. player.Name)
+                end)
+                
+                playerButtons[player.Name] = Btn
+            else
+                local Btn = playerButtons[player.Name]
+                if Btn then
+                    Btn.Position = UDim2.new(0, 5, 0, yPos)
+                    
+                    if selectedPlayer == player.Name then
+                        Btn.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+                    else
+                        Btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                    end
+                end
+            end
+            
+            yPos += 25
+        end
+    end
+    
+    PlayerList.CanvasSize = UDim2.new(0, 0, 0, yPos)
+end
+
+local ExecuteBtn = Instance.new("TextButton")
+ExecuteBtn.Size = UDim2.new(1, -10, 0, 25)
+ExecuteBtn.Position = UDim2.new(0, 5, 1, -30)
+ExecuteBtn.Text = "⚡ EXECUTE (5 cmds)"
+ExecuteBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+ExecuteBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecuteBtn.TextSize = 12
+ExecuteBtn.Font = Enum.Font.SourceSansBold
+ExecuteBtn.Parent = MainFrame
+
+ExecuteBtn.MouseButton1Click:Connect(function()
+    if selectedPlayer then
+        ExecuteBtn.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+        ExecuteBtn.Text = "EXECUTING 5..."
+        
+        local success = executeCommands()
+        
+        ExecuteBtn.BackgroundColor3 = success and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+        ExecuteBtn.Text = success and "✓ ALL 5 DONE" or "✗ SOME FAILED"
+        
+        task.wait(1)
+        ExecuteBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+        ExecuteBtn.Text = "⚡ EXECUTE (5 cmds)"
+        
+        print("5 commands executed for: " .. selectedPlayer)
+    else
+        print("Please select a player first!")
+        ExecuteBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        ExecuteBtn.Text = "SELECT PLAYER!"
+        task.wait(0.5)
+        ExecuteBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+        ExecuteBtn.Text = "⚡ EXECUTE (5 cmds)"
+    end
+end)
+
+updateList()
+
+Players.PlayerAdded:Connect(function(player)
+    task.wait(0.5)
+    updateList()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    updateList()
+end)
+
+while true do
+    task.wait(10)
+    updateList()
+end
+    
+else
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Tokiox AP Spammer"
+ScreenGui.Parent = PlayerGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 250, 0, 350)
+MainFrame.Position = UDim2.new(0, 10, 0, 10)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+MainFrame.Parent = ScreenGui
+
+local dragging = false
+local dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        update(input)
+    end
+end)
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 25)
+TitleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TitleBar.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -30, 1, 0)
+Title.Text = "Tokiox AP Spammer v4"
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = TitleBar
+
+
+local PlayerList = Instance.new("ScrollingFrame")
+PlayerList.Size = UDim2.new(1, -10, 1, -100) 
+PlayerList.Position = UDim2.new(0, 5, 0, 30)
+PlayerList.BackgroundTransparency = 1
+PlayerList.Parent = MainFrame
+
+local playerButtons = {}
+local DEBUG_MODE = true
+local function executeCommands(playerName)
+    local commands = {
+        ";rocket " .. playerName,
+        ";balloon " .. playerName,
+        ";inverse " .. playerName,
+        ";tiny " .. playerName,
+        ";jumpscare " .. playerName
+    }
+    
+    local RS = game:GetService("ReplicatedStorage")
+    local success = false
+    
+    for _, remoteName in ipairs({"AdminEvent", "AdminRemote", "ExecuteCommand", "CommandEvent", "Admin"}) do
+        local remote = RS:FindFirstChild(remoteName)
+        if remote and remote:IsA("RemoteEvent") then
+            if DEBUG_MODE then
+                print("Found RemoteEvent: " .. remoteName)
+            end
+            
+            for _, cmd in ipairs(commands) do
+                remote:FireServer(cmd)
+                if DEBUG_MODE then
+                    print("Fired: " .. cmd)
+                end
+                task.wait(0.01) 
+            end
+            success = true
+            break
+        end
+    end
+    
+    if not success then
+        for _, funcName in ipairs({"AdminFunction", "ExecuteCommandFunc", "CommandFunction"}) do
+            local func = RS:FindFirstChild(funcName)
+            if func and func:IsA("RemoteFunction") then
+                if DEBUG_MODE then
+                    print("Found RemoteFunction: " .. funcName)
+                end
+                
+                for _, cmd in ipairs(commands) do
+                    func:InvokeServer(cmd)
+                    if DEBUG_MODE then
+                        print("Invoked: " .. cmd)
+                    end
+                    task.wait(0.01)
+                end
+                success = true
+                break
+            end
+        end
+    end
+
+    if not success then
+        if DEBUG_MODE then
+            print("Trying chat method...")
+        end
+        
+        local TextChat = game:GetService("TextChatService")
+        local Channels = TextChat:FindFirstChild("TextChannels")
+        if Channels then
+            local General = Channels:FindFirstChild("RBXGeneral")
+            if General then
+                for _, cmd in ipairs(commands) do
+                    General:SendAsync(cmd)
+                    if DEBUG_MODE then
+                        print("Chat sent: " .. cmd)
+                    end
+                    task.wait(0.05) 
+                end
+                success = true
+            end
+        end
+    end
+    
+    return success
+end
+
+local function updateList()
+    local currentPlayers = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            currentPlayers[player.Name] = player
+        end
+    end
+    
+    for playerName, button in pairs(playerButtons) do
+        if not currentPlayers[playerName] then
+            if button and button.Parent then
+                button:Destroy()
+            end
+            playerButtons[playerName] = nil
+        end
+    end
+    
+    local yPos = 0
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if not playerButtons[player.Name] then
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1, -10, 0, 25)
+                Btn.Position = UDim2.new(0, 5, 0, yPos)
+                Btn.Text = player.Name
+                Btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Btn.Parent = PlayerList
+                
+                Btn.MouseButton1Click:Connect(function()
+                    local success = executeCommands(player.Name)
+                    
+                    Btn.BackgroundColor3 = success and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+                    Btn.Text = success and player.Name .. " ✓" or player.Name .. " ✗"
+                    
+                    task.wait(1)
+                    Btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+                    Btn.Text = player.Name
+                end)
+                
+                playerButtons[player.Name] = Btn
+            else
+                
+                local Btn = playerButtons[player.Name]
+                if Btn then
+                    Btn.Position = UDim2.new(0, 5, 0, yPos)
+                end
+            end
+            
+            yPos += 30
+        end
+    end
+    
+    -- Update canvas size
+    PlayerList.CanvasSize = UDim2.new(0, 0, 0, yPos)
+end
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -30, 0, 0)
+CloseBtn.Text = "X"
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Parent = TitleBar
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Size = UDim2.new(0, 80, 0, 25)
+RefreshBtn.Position = UDim2.new(0, 5, 1, -65)
+RefreshBtn.Text = "🔄 Refresh"
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 180)
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.Parent = MainFrame
+
+RefreshBtn.MouseButton1Click:Connect(function()
+    updateList()
+    print("Player list refreshed!")
+end)
+
+local HelloLabel = Instance.new("TextLabel")
+HelloLabel.Size = UDim2.new(1, -10, 0, 35) 
+HelloLabel.Position = UDim2.new(0, 5, 1, -45)
+HelloLabel.Text = "DC: https://discord.gg/tFkMd9ba"
+HelloLabel.BackgroundTransparency = 1
+HelloLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+HelloLabel.TextXAlignment = Enum.TextXAlignment.Left
+HelloLabel.TextSize = 16 
+HelloLabel.Font = Enum.Font.SourceSansBold 
+HelloLabel.Parent = MainFrame
+
+updateList()
+
+Players.PlayerAdded:Connect(function(player)
+    task.wait(0.5)
+    updateList()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    updateList()
+end)
+
+print("Tokiox AP Spammer Loaded Successfully!")
+    
+end
