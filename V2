@@ -358,7 +358,10 @@ local function update(input)
     local delta = input.Position - dragStart
     MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
+local player = game.Players.LocalPlayer
 
+player.CharacterAdded:Connect(function()
+    wait(0.1)
 MainFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -392,7 +395,7 @@ TitleBar.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -30, 1, 0)
-Title.Text = "Tokiox AP Spammer v4"
+Title.Text = "Tokiox AP Spammer"
 Title.BackgroundTransparency = 1
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Parent = TitleBar
@@ -587,5 +590,8 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 print("Tokiox AP Spammer Loaded Successfully!")
-    
+    local player = game.Players.LocalPlayer
+
+player.CharacterAdded:Connect(function()
+    wait(0.1)
 end
