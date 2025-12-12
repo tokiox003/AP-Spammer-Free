@@ -333,8 +333,6 @@ while true do
     updateList()
 local player = game.Players.LocalPlayer
 
-player.CharacterAdded:Connect(function()
-    wait(0.1)
 end
     
 else
@@ -594,6 +592,4 @@ end)
 print("Tokiox AP Spammer Loaded Successfully!")
     local player = game.Players.LocalPlayer
 
-player.CharacterAdded:Connect(function()
-    wait(0.1)
 end
